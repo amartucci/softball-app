@@ -1,0 +1,415 @@
+:root {
+    --primary-color: #005A9C; /* Blue */
+    --secondary-color: #FDB827; /* Yellow */
+    --background-color: #f4f4f9;
+    --card-background: #ffffff;
+    --text-color: #333;
+    --light-gray: #ddd;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 15px;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.card {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.input-group {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+#playerNameInput {
+    flex-grow: 1;
+    border: 1px solid var(--light-gray);
+    padding: 10px;
+    border-radius: 4px 0 0 4px;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #004170;
+}
+
+#addPlayerBtn {
+    border-radius: 0 4px 4px 0;
+}
+
+.setup-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#generateLineupBtn {
+    background-color: #28a745; /* Green */
+}
+#generateLineupBtn:hover {
+    background-color: #218838;
+}
+
+#nextBatterBtn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    font-weight: bold;
+}
+#nextBatterBtn:hover {
+    background-color: #dca21c;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+li.player-item:last-child {
+    border-bottom: none;
+}
+
+li.player-item .player-name-and-checkbox {
+    flex-grow: 1;
+}
+
+.player-item input[type="checkbox"] {
+    transform: scale(1.5);
+    margin-right: 15px;
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    color: #dc3545; /* Red */
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 15px;
+}
+
+.hidden {
+    display: none;
+}
+
+#battingOrderDisplay ol {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+    border: 1px solid var(--light-gray);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#battingOrderDisplay li {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--light-gray);
+    font-size: 1.1em;
+}
+
+#battingOrderDisplay li:last-child {
+    border-bottom: none;
+}
+
+#battingOrderDisplay li.current-batter {
+    background-color: #FDB827; /* Yellow */
+    font-weight: bold;
+}
+
+#battingOrderDisplay li.on-deck {
+    background-color: #fde29b;
+}
+
+#battingOrderDisplay li.in-the-hole {
+    background-color: #fff3d4;
+}
+
+#battingOrderDisplay li small {
+    font-weight: normal;
+    font-size: 0.8em;
+    color: #555;
+    margin-right: 8px;
+}
+
+#positionsDisplay h3 {
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 5px;
+    margin-top: 20px;
+}
+
+#positionsDisplay table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#positionsDisplay th, #positionsDisplay td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+#resetStatsBtn {
+    background-color: #dc3545; /* Red */
+    width: 100%;
+    margin-top: 15px;
+}
+#resetStatsBtn:hover {
+    background-color: #c82333;
+}
+
+#saveGameBtn {
+    background-color: #17a2b8; /* Teal */
+    margin-top: 10px;
+    width: 100%;
+}
+#saveGameBtn:disabled {
+    background-color: #6c757d; /* Gray */
+    cursor: not-allowed;
+}
+
+#statsDisplay .player-stats {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+#statsDisplay .player-stats:last-child {
+    border-bottom: none;
+}
+#statsDisplay .player-stats h4 {
+    margin: 0 0 5px 0;
+}
+#statsDisplay .position-counts {
+    font-size: 0.9em;
+    color: #555;
+}
+
+#rosterHeader {
+    cursor: pointer;
+    position: relative;
+    user-select: none; /* Prevents text selection on click */
+}
+
+#rosterHeader::after {
+    content: '▲';
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s ease;
+    font-size: 0.8em;
+    color: var(--light-gray);
+}
+
+#rosterHeader.collapsed::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+#rosterContent {
+    max-height: 1000px; /* A large height for the expanded state */
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+
+#rosterContent.collapsed {
+    max-height: 0;
+    margin-top: -10px; /* Smooths the collapse */
+}
+
+#manualEntryForm {
+    margin-top: 20px;
+    border-top: 1px solid var(--light-gray);
+    padding-top: 20px;
+}
+
+.manual-entry-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.manual-entry-row select, .manual-entry-row input {
+    padding: 8px;
+    border: 1px solid var(--light-gray);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.manual-entry-row .player-select {
+    flex: 3;
+}
+
+.manual-entry-row .position-select {
+    flex: 3;
+}
+
+.manual-entry-row .inning-count {
+    flex: 1;
+    width: 50px;
+}
+
+#addManualEntryRowBtn {
+    background-color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.form-actions button {
+    flex-grow: 1;
+}
+
+.form-actions button.secondary {
+    background-color: #6c757d;
+}
+.form-actions button.secondary:hover {
+    background-color: #5a6268;
+}
+
+.manual-entry-row .remove-row-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.pitcher-toggle {
+    background-color: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #ced4da;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 15px;
+    transition: all 0.2s ease-in-out;
+    padding: 0;
+    line-height: 26px;
+    text-align: center;
+}
+
+.pitcher-toggle.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+#printBtn {
+    width: 100%;
+    margin-bottom: 20px;
+    background-color: #6c757d;
+    font-size: 18px;
+    padding: 12px;
+}
+#printBtn:hover {
+    background-color: #5a6268;
+}
+
+#generateStatusMessage {
+    font-weight: bold;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#generateStatusMessage.success {
+    color: #28a745; /* Green */
+}
+
+#generateStatusMessage.failure {
+    color: #dc3545; /* Red */
+}
+
+
+/* --- PRINT-ONLY STYLES --- */
+@media print {
+    /* Hide all elements that are not the live game section */
+    body > .container > *:not(#liveGameSection) {
+        display: none;
+    }
+
+    /* Make sure the live game section is visible and takes up the whole page */
+    #liveGameSection {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* Hide all buttons and other interactive elements during printing */
+    button, .remove-btn, .pitcher-toggle, input {
+        display: none !important;
+    }
+
+    /* General print cleanup */
+    body {
+        font-family: 'Times New Roman', Times, serif;
+        background-color: #fff;
+        color: #000;
+        padding: 0;
+        margin: 0;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #000;
+        margin-top: 20px;
+        page-break-inside: avoid; /* Tries to prevent cards from splitting across pages */
+    }
+
+    h1, h2, h3, h4 {
+        color: #000 !important;
+    }
+
+    /* Style batting order for black and white printing */
+    #battingOrderDisplay li.current-batter,
+    #battingOrderDisplay li.on-deck,
+    #battingOrderDisplay li.in-the-hole {
+        background-color: #eee !important;
+        color: #000 !important;
+        border: 1px solid #ccc;
+    }
+}

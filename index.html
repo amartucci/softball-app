@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Softball Roster Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#005A9C"/>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🥎 Softball Roster Pro</h1>
+        </header>
+
+        <div class="card">
+            <h2 id="rosterHeader">Master Roster</h2>
+            <div id="rosterContent">
+                <div class="input-group">
+                    <input type="text" id="playerNameInput" placeholder="Enter New Player Name">
+                    <button id="addPlayerBtn">Add Player</button>
+                </div>
+                <ul id="masterRosterList">
+                    </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Game Day Setup</h2>
+            <p>Select players for today's game, then generate the lineup.</p>
+            <div class="setup-actions">
+                <button id="selectAllBtn">Select / Deselect All</button>
+                <button id="generateLineupBtn">Generate 4-Inning Lineup</button>
+                <span id="generateStatusMessage"></span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>📊 Season Stats</h2>
+            <div id="statsDisplay">
+                </div>
+            <button id="resetStatsBtn">Reset All Stats</button>
+        </div>
+        
+        <div class="card">
+            <h2>Manual Game Entry</h2>
+            <p>Add data from games that have already been played.</p>
+            <button id="showManualEntryFormBtn">Add Past Game Data</button>
+            <div id="manualEntryForm" class="hidden">
+                <div id="manualEntryRows">
+                    </div>
+                <button id="addManualEntryRowBtn">+ Add Player/Position</button>
+                <div class="form-actions">
+                    <button id="saveManualGameBtn">Save Manual Game</button>
+                    <button id="cancelManualGameBtn" class="secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="liveGameSection" class="hidden">
+            <button id="printBtn">🖨️ Print Lineup</button>
+
+            <div class="card">
+                <h2>⚾ Live Batting Order</h2>
+                <div id="battingOrderDisplay">
+                    </div>
+                <button id="nextBatterBtn">Next Batter</button>
+                <button id="saveGameBtn">Save Game to Stats</button>
+            </div>
+
+            <div class="card">
+                <h2>📋 Defensive Positions</h2>
+                <div id="positionsDisplay">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
