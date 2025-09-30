@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelManualGameBtn = document.getElementById('cancelManualGameBtn');
     const printBtn = document.getElementById('printBtn');
     const generateStatusMessage = document.getElementById('generateStatusMessage');
+    const generateBattingOrderCheckbox = document.getElementById('generateBattingOrderCheckbox'); // **** NEW ****
+    const battingOrderCard = document.getElementById('battingOrderCard'); // **** NEW ****
 
     // App State
     let masterRoster = [];
@@ -125,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- LINEUP GENERATION ---
+    // --- **** UPDATED LINEUP GENERATION **** ---
     function generateLineup() {
         gameRoster = Array.from(document.querySelectorAll('.player-checkbox:checked')).map(cb => cb.value);
         
@@ -134,8 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        battingOrder = shuffleArray([...gameRoster]);
+        // Check if batting order should be generated
+        if (generateBattingOrderCheckbox.checked) {
+            battingOrder = shuffleArray([...gameRoster]);
+            battingOrderCard.classList.remove('hidden');
+        } else {
+            battingOrder = [];
+            battingOrderCard.classList.add('hidden');
+        }
         renderBattingOrder();
+
         generatePositions();
         renderPositions();
         liveGameSection.classList.remove('hidden');
@@ -245,68 +255,50 @@ document.addEventListener('DOMContentLoaded', () => {
     function generatePositions() {
         positionAssignments = [];
         const playerGameHistory = {}; 
-
-        // **** CHANGE #1: Inning count is now 3 ****
         for (let inning = 1; inning <= 3; inning++) {
             let playersForThisInning = shuffleArray([...gameRoster]).slice(0, ALL_POSITIONS.length);
             let bench = gameRoster.filter(p => !playersForThisInning.includes(p));
             let inningAssignments = { inning: inning, positions: {}, bench: bench };
             let availablePositions = [...ALL_POSITIONS];
             let availablePlayers = [...playersForThisInning];
-
             while (availablePositions.length > 0) {
                 let bestAssignment = { player: null, position: null, score: -Infinity };
-
                 for (const player of availablePlayers) {
                     for (const position of availablePositions) {
                         let currentScore = 0;
-
-                        // Rule: Only designated pitchers can pitch
                         if (position === 'Pitcher') {
                             const playerData = masterRoster.find(p => p.name === player);
                             if (!playerData || !playerData.isPitcher) {
                                 continue; 
                             }
                         }
-                        
-                        // Scoring based on season history (high score for low play time)
                         const playerStats = seasonStats[player] || {};
                         const seasonCount = playerStats[position] || 0;
                         currentScore += 1000 / (seasonCount + 1);
-
-                        // Scoring bonus for IF/OF rotation
                         if (playerGameHistory[player] && playerGameHistory[player].length > 0) {
                             const lastPos = playerGameHistory[player][playerGameHistory[player].length - 1];
                             if (getPositionType(lastPos) !== getPositionType(position)) {
                                 currentScore += 500;
                             }
                         }
-                        
-                        // **** CHANGE #2: Heavy penalty for in-game repeats instead of a hard rule ****
-                        // This ensures the field always gets filled.
                         if (playerGameHistory[player] && playerGameHistory[player].includes(position)) {
-                            currentScore -= 10000; // A large penalty makes repeats very unlikely, but not impossible
+                            currentScore -= 10000;
                         }
-
                         if (currentScore > bestAssignment.score) {
                             bestAssignment = { player, position, score: currentScore };
                         }
                     }
                 }
-                
                 if (bestAssignment.player === null) {
                     console.error("Algorithm Error: Could not find any assignment. Assigning randomly.");
-                    // Fallback for an unexpected edge case
                     bestAssignment.player = availablePlayers[0];
                     bestAssignment.position = availablePositions[0];
                 }
-
                 const { player, position } = bestAssignment;
                 inningAssignments.positions[position] = player;
                 availablePlayers = availablePlayers.filter(p => p !== player);
                 availablePositions = availablePositions.filter(p => p !== position);
             }
-
             for (const pos in inningAssignments.positions) {
                 const p = inningAssignments.positions[pos];
                 if (!playerGameHistory[p]) playerGameHistory[p] = [];
