@@ -245,41 +245,68 @@ document.addEventListener('DOMContentLoaded', () => {
     function generatePositions() {
         positionAssignments = [];
         const playerGameHistory = {}; 
-        for (let inning = 1; inning <= 4; inning++) {
+
+        // **** CHANGE #1: Inning count is now 3 ****
+        for (let inning = 1; inning <= 3; inning++) {
             let playersForThisInning = shuffleArray([...gameRoster]).slice(0, ALL_POSITIONS.length);
             let bench = gameRoster.filter(p => !playersForThisInning.includes(p));
             let inningAssignments = { inning: inning, positions: {}, bench: bench };
             let availablePositions = [...ALL_POSITIONS];
             let availablePlayers = [...playersForThisInning];
+
             while (availablePositions.length > 0) {
-                let bestAssignment = { player: null, position: null, score: -1 };
+                let bestAssignment = { player: null, position: null, score: -Infinity };
+
                 for (const player of availablePlayers) {
                     for (const position of availablePositions) {
+                        let currentScore = 0;
+
+                        // Rule: Only designated pitchers can pitch
                         if (position === 'Pitcher') {
                             const playerData = masterRoster.find(p => p.name === player);
-                            if (!playerData || !playerData.isPitcher) continue;
+                            if (!playerData || !playerData.isPitcher) {
+                                continue; 
+                            }
                         }
-                        if (playerGameHistory[player] && playerGameHistory[player].includes(position)) continue; 
-                        let currentScore = 0;
+                        
+                        // Scoring based on season history (high score for low play time)
                         const playerStats = seasonStats[player] || {};
                         const seasonCount = playerStats[position] || 0;
                         currentScore += 1000 / (seasonCount + 1);
+
+                        // Scoring bonus for IF/OF rotation
                         if (playerGameHistory[player] && playerGameHistory[player].length > 0) {
                             const lastPos = playerGameHistory[player][playerGameHistory[player].length - 1];
-                            if (getPositionType(lastPos) !== getPositionType(position)) currentScore += 500;
+                            if (getPositionType(lastPos) !== getPositionType(position)) {
+                                currentScore += 500;
+                            }
                         }
-                        if (currentScore > bestAssignment.score) bestAssignment = { player, position, score: currentScore };
+                        
+                        // **** CHANGE #2: Heavy penalty for in-game repeats instead of a hard rule ****
+                        // This ensures the field always gets filled.
+                        if (playerGameHistory[player] && playerGameHistory[player].includes(position)) {
+                            currentScore -= 10000; // A large penalty makes repeats very unlikely, but not impossible
+                        }
+
+                        if (currentScore > bestAssignment.score) {
+                            bestAssignment = { player, position, score: currentScore };
+                        }
                     }
                 }
+                
                 if (bestAssignment.player === null) {
-                    console.error("Could not find a valid assignment for inning " + inning);
-                    break; 
+                    console.error("Algorithm Error: Could not find any assignment. Assigning randomly.");
+                    // Fallback for an unexpected edge case
+                    bestAssignment.player = availablePlayers[0];
+                    bestAssignment.position = availablePositions[0];
                 }
+
                 const { player, position } = bestAssignment;
                 inningAssignments.positions[position] = player;
                 availablePlayers = availablePlayers.filter(p => p !== player);
                 availablePositions = availablePositions.filter(p => p !== position);
             }
+
             for (const pos in inningAssignments.positions) {
                 const p = inningAssignments.positions[pos];
                 if (!playerGameHistory[p]) playerGameHistory[p] = [];
@@ -390,7 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Load
     loadAllData();
 
-    // **** THIS CODE WAS MOVED HERE FROM sw.js ****
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
