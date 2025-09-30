@@ -22,8 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelManualGameBtn = document.getElementById('cancelManualGameBtn');
     const printBtn = document.getElementById('printBtn');
     const generateStatusMessage = document.getElementById('generateStatusMessage');
-    const generateBattingOrderCheckbox = document.getElementById('generateBattingOrderCheckbox'); // **** NEW ****
-    const battingOrderCard = document.getElementById('battingOrderCard'); // **** NEW ****
+    const generateBattingOrderCheckbox = document.getElementById('generateBattingOrderCheckbox');
+    const battingOrderCard = document.getElementById('battingOrderCard');
+    const exportDataBtn = document.getElementById('exportDataBtn'); // **** NEW ****
+    const importFile = document.getElementById('importFile'); // **** NEW ****
 
     // App State
     let masterRoster = [];
@@ -42,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayStatusMessage(message, type) {
         generateStatusMessage.textContent = message;
         generateStatusMessage.className = type;
-        
         setTimeout(() => {
             generateStatusMessage.textContent = '';
             generateStatusMessage.className = '';
@@ -72,6 +73,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         renderMasterRoster();
         renderSeasonStats();
+    }
+
+    // --- **** NEW IMPORT/EXPORT FUNCTIONS **** ---
+    function exportData() {
+        const headers = ['Name', 'IsPitcher', ...ALL_POSITIONS];
+        let csvContent = headers.join(',') + '\n';
+
+        masterRoster.forEach(player => {
+            const row = [player.name, player.isPitcher];
+            const playerStats = seasonStats[player.name] || {};
+            
+            ALL_POSITIONS.forEach(pos => {
+                row.push(playerStats[pos] || 0);
+            });
+            csvContent += row.join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `softball-roster-backup-${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            if (!confirm('Are you sure you want to import this data? This will overwrite all existing player and stats data.')) {
+                return;
+            }
+
+            try {
+                const lines = text.split('\n').filter(line => line);
+                const headers = lines.shift().split(',').map(h => h.trim());
+                
+                const newRoster = [];
+                const newStats = {};
+
+                lines.forEach(line => {
+                    const values = line.split(',');
+                    const name = values[0];
+                    const isPitcher = values[1] === 'true';
+
+                    newRoster.push({ name, isPitcher });
+                    newStats[name] = {};
+
+                    headers.slice(2).forEach((pos, index) => {
+                        const count = parseInt(values[index + 2], 10);
+                        if (count > 0) {
+                            newStats[name][pos] = count;
+                        }
+                    });
+                });
+
+                masterRoster = newRoster;
+                seasonStats = newStats;
+                saveAllData();
+                loadAllData(); // Reload and re-render everything
+                alert('Data imported successfully!');
+            } catch (error) {
+                alert('Failed to import data. Please check the file format.');
+                console.error(error);
+            } finally {
+                // Reset file input to allow re-uploading the same file
+                event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
     }
 
     // --- ROSTER MANAGEMENT ---
@@ -127,16 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- **** UPDATED LINEUP GENERATION **** ---
+    // --- LINEUP GENERATION ---
     function generateLineup() {
         gameRoster = Array.from(document.querySelectorAll('.player-checkbox:checked')).map(cb => cb.value);
-        
         if (gameRoster.length < ALL_POSITIONS.length) {
             displayStatusMessage(`Failed: Need ${ALL_POSITIONS.length} players.`, 'failure');
             return;
         }
-
-        // Check if batting order should be generated
         if (generateBattingOrderCheckbox.checked) {
             battingOrder = shuffleArray([...gameRoster]);
             battingOrderCard.classList.remove('hidden');
@@ -145,13 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
             battingOrderCard.classList.add('hidden');
         }
         renderBattingOrder();
-
         generatePositions();
         renderPositions();
         liveGameSection.classList.remove('hidden');
         saveGameBtn.disabled = false;
         saveGameBtn.textContent = 'Save Game to Stats';
-
         displayStatusMessage('Lineup generated!', 'success');
     }
 
@@ -268,18 +340,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         let currentScore = 0;
                         if (position === 'Pitcher') {
                             const playerData = masterRoster.find(p => p.name === player);
-                            if (!playerData || !playerData.isPitcher) {
-                                continue; 
-                            }
+                            if (!playerData || !playerData.isPitcher) continue;
                         }
                         const playerStats = seasonStats[player] || {};
                         const seasonCount = playerStats[position] || 0;
                         currentScore += 1000 / (seasonCount + 1);
                         if (playerGameHistory[player] && playerGameHistory[player].length > 0) {
                             const lastPos = playerGameHistory[player][playerGameHistory[player].length - 1];
-                            if (getPositionType(lastPos) !== getPositionType(position)) {
-                                currentScore += 500;
-                            }
+                            if (getPositionType(lastPos) !== getPositionType(position)) currentScore += 500;
                         }
                         if (playerGameHistory[player] && playerGameHistory[player].includes(position)) {
                             currentScore -= 10000;
@@ -405,6 +473,8 @@ document.addEventListener('DOMContentLoaded', () => {
     printBtn.addEventListener('click', () => {
         window.print();
     });
+    exportDataBtn.addEventListener('click', exportData); // **** NEW ****
+    importFile.addEventListener('change', importData); // **** NEW ****
 
     // Initial Load
     loadAllData();
@@ -419,4 +489,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-}); 
+});

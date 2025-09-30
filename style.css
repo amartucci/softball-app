@@ -413,3 +413,29 @@ li.player-item .player-name-and-checkbox {
         border: 1px solid #ccc;
     }
 }
+
+/* Add these new rules to the end of your style.css */
+
+.data-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.data-actions button, .data-actions .btn-import {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.btn-import {
+    display: inline-block;
+    background-color: #17a2b8; /* Teal */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+.btn-import:hover {
+    background-color: #138496;
+}
